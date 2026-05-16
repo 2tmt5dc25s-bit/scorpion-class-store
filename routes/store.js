@@ -29,6 +29,23 @@ router.post('/logout', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── REGISTER ─────────────────────────────────────────────────
+router.post('/register', (req, res) => {
+  const { name, pin } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: 'Please enter your name' });
+  if (!pin || !/^\d{4}$/.test(pin)) return res.status(400).json({ error: 'PIN must be exactly 4 digits' });
+  const taken = db.prepare(`SELECT id FROM students WHERE pin=?`).get(pin);
+  if (taken) return res.status(409).json({ error: 'That PIN is already taken — choose a different one' });
+  try {
+    const r = db.prepare(`INSERT INTO students (name, pin, tickets) VALUES (?, ?, 0)`).run(name.trim(), pin);
+    const student = db.prepare(`SELECT id, name, tickets FROM students WHERE id=?`).get(r.lastInsertRowid);
+    req.session.studentId = student.id;
+    res.json({ id: student.id, name: student.name, tickets: student.tickets });
+  } catch {
+    res.status(500).json({ error: 'Could not create account, please try again' });
+  }
+});
+
 // ── AUTH MIDDLEWARE ──────────────────────────────────────────
 function requireStudent(req, res, next) {
   if (req.session?.studentId) return next();

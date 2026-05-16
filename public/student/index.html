@@ -46,6 +46,11 @@ body{font-family:'Inter',sans-serif;background:var(--gray);color:var(--black);mi
 .pin-key.go{background:var(--green);color:var(--white);border-color:var(--green-dark);font-size:14px;font-weight:700;letter-spacing:.5px}
 .pin-key.go:hover{background:var(--green-dark)}
 .pin-error{color:#c0392b;font-size:13px;text-align:center;margin-top:.8rem;min-height:1.2em}
+.pin-link{margin-top:1rem;font-size:13px;color:var(--muted);text-align:center}
+.pin-link a{color:var(--green-dark);font-weight:600;text-decoration:none}
+.pin-link a:hover{text-decoration:underline}
+.reg-name{width:100%;padding:.65rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:1rem;outline:none;color:var(--black)}
+.reg-name:focus{border-color:var(--green)}
 .store-closed{background:var(--black);color:var(--white);border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1.5rem;width:100%;max-width:320px}
 .store-closed h2{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#e74c3c;letter-spacing:1px;margin-bottom:.4rem}
 .store-closed p{font-size:13px;color:#aaa}
@@ -162,6 +167,43 @@ body{font-family:'Inter',sans-serif;background:var(--gray);color:var(--black);mi
       </div>
       <div class="pin-error" id="pin-error"></div>
     </div>
+    <p class="pin-link">New student? <a href="#" onclick="showRegister();return false">Sign up here</a></p>
+  </div>
+</div>
+
+<!-- REGISTER SCREEN -->
+<div class="screen" id="screen-register">
+  <div class="pin-wrap">
+    <div class="mascot-ring">
+      <svg width="52" height="52" viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="56" rx="16" ry="12" fill="#4ecb6e"/><ellipse cx="50" cy="40" rx="11" ry="9" fill="#4ecb6e"/><circle cx="45" cy="38" r="2.2" fill="#0f0f0f"/><circle cx="55" cy="38" r="2.2" fill="#0f0f0f"/><circle cx="45.8" cy="37.2" r=".8" fill="white"/><circle cx="55.8" cy="37.2" r=".8" fill="white"/><path d="M39 37 C32 32 26 35 24 30" stroke="#4ecb6e" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M24 30 C21 27 19 30 20 33" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M24 30 C23 26 26 25 27 28" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M61 37 C68 32 74 35 76 30" stroke="#4ecb6e" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M76 30 C79 27 81 30 80 33" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M76 30 C77 26 74 25 73 28" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><line x1="38" y1="52" x2="26" y2="48" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="37" y1="57" x2="24" y2="56" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="62" x2="26" y2="65" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="52" x2="74" y2="48" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="63" y1="57" x2="76" y2="56" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="62" x2="74" y2="65" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><path d="M50 68 C50 74 44 76 42 82 C40 88 44 94 50 96" stroke="#4ecb6e" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="51" cy="97" r="2.5" fill="#4ecb6e"/></svg>
+    </div>
+    <div class="pin-title">Create Account</div>
+    <div class="pin-sub">Enter your name and pick a 4-digit PIN</div>
+    <div class="pin-box">
+      <input class="reg-name" id="reg-name" type="text" placeholder="Your first name" autocomplete="off" />
+      <div class="pin-display" id="reg-pin-display">
+        <div class="pin-dot" id="rd0"></div>
+        <div class="pin-dot" id="rd1"></div>
+        <div class="pin-dot" id="rd2"></div>
+        <div class="pin-dot" id="rd3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="regKey('1')">1</button>
+        <button class="pin-key" onclick="regKey('2')">2</button>
+        <button class="pin-key" onclick="regKey('3')">3</button>
+        <button class="pin-key" onclick="regKey('4')">4</button>
+        <button class="pin-key" onclick="regKey('5')">5</button>
+        <button class="pin-key" onclick="regKey('6')">6</button>
+        <button class="pin-key" onclick="regKey('7')">7</button>
+        <button class="pin-key" onclick="regKey('8')">8</button>
+        <button class="pin-key" onclick="regKey('9')">9</button>
+        <button class="pin-key del" onclick="regDel()">⌫</button>
+        <button class="pin-key" onclick="regKey('0')">0</button>
+        <button class="pin-key go" onclick="register()">JOIN</button>
+      </div>
+      <div class="pin-error" id="reg-error"></div>
+    </div>
+    <p class="pin-link">Already have a PIN? <a href="#" onclick="showLogin();return false">Log in</a></p>
   </div>
 </div>
 
@@ -214,6 +256,7 @@ body{font-family:'Inter',sans-serif;background:var(--gray);color:var(--black);mi
 
 <script>
 let pin = '';
+let regPin = '';
 let student = null;
 let allItems = [];
 let allCategories = [];
@@ -258,8 +301,51 @@ async function pinSubmit() {
   }
 }
 
+// ── REGISTER ─────────────────────────────────────────────────
+function showRegister() {
+  regPin = '';
+  document.getElementById('reg-error').textContent = '';
+  document.getElementById('reg-name').value = '';
+  updateRegDots();
+  document.getElementById('screen-pin').classList.remove('active');
+  document.getElementById('screen-register').classList.add('active');
+  document.getElementById('reg-name').focus();
+}
+function showLogin() {
+  document.getElementById('screen-register').classList.remove('active');
+  document.getElementById('screen-pin').classList.add('active');
+}
+function updateRegDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('rd' + i).classList.toggle('filled', i < regPin.length);
+  }
+}
+function regKey(k) {
+  if (regPin.length >= 4) return;
+  regPin += k;
+  updateRegDots();
+  document.getElementById('reg-error').textContent = '';
+}
+function regDel() { regPin = regPin.slice(0, -1); updateRegDots(); }
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  if (!name) { document.getElementById('reg-error').textContent = 'Please enter your name'; return; }
+  if (regPin.length < 4) { document.getElementById('reg-error').textContent = 'Please enter a 4-digit PIN'; return; }
+  try {
+    const res = await api('/api/store/register', 'POST', { name, pin: regPin });
+    student = res;
+    document.getElementById('screen-register').classList.remove('active');
+    enterStore();
+  } catch (e) {
+    document.getElementById('reg-error').textContent = e.message || 'Could not create account';
+    regPin = ''; updateRegDots();
+  }
+}
+
 // ── STORE ─────────────────────────────────────────────────────
 function enterStore() {
+  document.getElementById('screen-pin').classList.remove('active');
+  document.getElementById('screen-register').classList.remove('active');
   document.getElementById('header-right').style.display = 'block';
   document.getElementById('bottom-nav').style.display = 'flex';
   showTab('store');
@@ -392,6 +478,7 @@ async function logout() {
   document.getElementById('screen-pin').classList.add('active');
   document.getElementById('screen-store').classList.remove('active');
   document.getElementById('screen-orders').classList.remove('active');
+  document.getElementById('screen-register').classList.remove('active');
   updateDots();
 }
 
