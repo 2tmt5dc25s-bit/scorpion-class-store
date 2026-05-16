@@ -180,7 +180,8 @@ body{font-family:'Inter',sans-serif;background:var(--gray);color:var(--black);mi
     <div class="pin-title">Create Account</div>
     <div class="pin-sub">Enter your name and pick a 4-digit PIN</div>
     <div class="pin-box">
-      <input class="reg-name" id="reg-name" type="text" placeholder="Your first name" autocomplete="off" />
+      <input class="reg-name" id="reg-first" type="text" placeholder="First name" autocomplete="off" style="margin-bottom:.5rem" />
+      <input class="reg-name" id="reg-last" type="text" placeholder="Last name" autocomplete="off" />
       <div class="pin-display" id="reg-pin-display">
         <div class="pin-dot" id="rd0"></div>
         <div class="pin-dot" id="rd1"></div>
@@ -305,11 +306,12 @@ async function pinSubmit() {
 function showRegister() {
   regPin = '';
   document.getElementById('reg-error').textContent = '';
-  document.getElementById('reg-name').value = '';
+  document.getElementById('reg-first').value = '';
+  document.getElementById('reg-last').value = '';
   updateRegDots();
   document.getElementById('screen-pin').classList.remove('active');
   document.getElementById('screen-register').classList.add('active');
-  document.getElementById('reg-name').focus();
+  document.getElementById('reg-first').focus();
 }
 function showLogin() {
   document.getElementById('screen-register').classList.remove('active');
@@ -328,8 +330,11 @@ function regKey(k) {
 }
 function regDel() { regPin = regPin.slice(0, -1); updateRegDots(); }
 async function register() {
-  const name = document.getElementById('reg-name').value.trim();
-  if (!name) { document.getElementById('reg-error').textContent = 'Please enter your name'; return; }
+  const first = document.getElementById('reg-first').value.trim();
+  const last = document.getElementById('reg-last').value.trim();
+  const name = first && last ? `${first} ${last}` : '';
+  if (!first) { document.getElementById('reg-error').textContent = 'Please enter your first name'; return; }
+  if (!last) { document.getElementById('reg-error').textContent = 'Please enter your last name'; return; }
   if (regPin.length < 4) { document.getElementById('reg-error').textContent = 'Please enter a 4-digit PIN'; return; }
   try {
     const res = await api('/api/store/register', 'POST', { name, pin: regPin });
