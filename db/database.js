@@ -33,6 +33,7 @@ db.exec(`
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     name    TEXT NOT NULL,
     pin     TEXT NOT NULL,
+    period  TEXT NOT NULL DEFAULT '',
     tickets INTEGER NOT NULL DEFAULT 0,
     active  INTEGER NOT NULL DEFAULT 1
   );
@@ -63,6 +64,9 @@ db.exec(`
     value TEXT NOT NULL
   );
 `);
+
+// Migrate: add period column to existing databases
+try { db.exec(`ALTER TABLE students ADD COLUMN period TEXT NOT NULL DEFAULT ''`); } catch {}
 
 // Seed default settings
 const seedSettings = db.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`);

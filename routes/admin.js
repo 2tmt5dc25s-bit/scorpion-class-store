@@ -130,25 +130,25 @@ router.patch('/items/:id/stock', requireAdmin, (req, res) => {
 
 // ── STUDENTS ─────────────────────────────────────────────────
 router.get('/students', requireAdmin, (req, res) => {
-  const students = db.prepare(`SELECT id, name, pin, tickets, active FROM students ORDER BY name`).all();
+  const students = db.prepare(`SELECT id, name, pin, period, tickets, active FROM students ORDER BY period, name`).all();
   res.json(students);
 });
 
 router.post('/students', requireAdmin, (req, res) => {
-  const { name, pin, tickets } = req.body;
+  const { name, pin, period, tickets } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'Name required' });
   if (!pin?.trim())  return res.status(400).json({ error: 'PIN required' });
   try {
-    const r = db.prepare(`INSERT INTO students (name,pin,tickets) VALUES (?,?,?)`)
-      .run(name.trim(), pin.trim(), tickets||0);
+    const r = db.prepare(`INSERT INTO students (name,pin,period,tickets) VALUES (?,?,?,?)`)
+      .run(name.trim(), pin.trim(), period?.trim() || '', tickets||0);
     res.json({ id: r.lastInsertRowid });
   } catch { res.status(409).json({ error: 'Student already exists' }); }
 });
 
 router.put('/students/:id', requireAdmin, (req, res) => {
-  const { name, pin, tickets, active } = req.body;
-  db.prepare(`UPDATE students SET name=?,pin=?,tickets=?,active=? WHERE id=?`)
-    .run(name, pin, tickets, active ?? 1, req.params.id);
+  const { name, pin, period, tickets, active } = req.body;
+  db.prepare(`UPDATE students SET name=?,pin=?,period=?,tickets=?,active=? WHERE id=?`)
+    .run(name, pin, period ?? '', tickets, active ?? 1, req.params.id);
   res.json({ ok: true });
 });
 

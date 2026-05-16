@@ -245,7 +245,7 @@ tr:hover td{background:#f5faf5}
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>Name</th><th>PIN</th><th>Tickets</th><th>Adjust</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Period</th><th>PIN</th><th>Tickets</th><th>Adjust</th><th>Status</th><th></th></tr></thead>
             <tbody id="students-tbody"></tbody>
           </table>
         </div>
@@ -302,6 +302,7 @@ tr:hover td{background:#f5faf5}
   <div class="modal">
     <h3 id="stu-modal-title">Add student</h3>
     <div class="field"><label>Name</label><input type="text" id="fs-name" placeholder="e.g. Alex Smith"></div>
+    <div class="field"><label>Class Period</label><input type="text" id="fs-period" placeholder="e.g. 3"></div>
     <div class="field-row">
       <div class="field"><label>PIN</label><input type="text" id="fs-pin" placeholder="e.g. 1234" maxlength="8"></div>
       <div class="field"><label>Starting tickets</label>
@@ -537,11 +538,12 @@ async function loadStudents() {
 }
 function renderStudents() {
   const q = document.getElementById('stu-search')?.value.toLowerCase()||'';
-  const list = allStudents.filter(s=>!q||s.name.toLowerCase().includes(q));
+  const list = allStudents.filter(s=>!q||s.name.toLowerCase().includes(q)||s.period?.toLowerCase().includes(q));
   const tbody = document.getElementById('students-tbody');
-  if(!list.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="6">No students found.</td></tr>`;return;}
+  if(!list.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="7">No students found.</td></tr>`;return;}
   tbody.innerHTML = list.map(s=>`<tr>
     <td style="font-weight:600">${s.name}</td>
+    <td style="font-size:13px;color:var(--muted)">${s.period||'—'}</td>
     <td style="font-family:monospace;letter-spacing:2px">${s.pin}</td>
     <td style="font-weight:700;color:var(--green)">🎟️ ${s.tickets}</td>
     <td><button class="btn sm" onclick="openTicketModal(${s.id},'${s.name.replace(/'/g,"\\'")}')">± Tickets</button></td>
@@ -555,17 +557,18 @@ function renderStudents() {
 function openStudentModal(id=null) {
   editStudentId=id;
   document.getElementById('stu-modal-title').textContent=id?'Edit student':'Add student';
-  if(id){const s=allStudents.find(x=>x.id===id);document.getElementById('fs-name').value=s.name;document.getElementById('fs-pin').value=s.pin;document.getElementById('fs-tickets').value=s.tickets;}
-  else{document.getElementById('fs-name').value='';document.getElementById('fs-pin').value='';document.getElementById('fs-tickets').value='0';}
+  if(id){const s=allStudents.find(x=>x.id===id);document.getElementById('fs-name').value=s.name;document.getElementById('fs-period').value=s.period||'';document.getElementById('fs-pin').value=s.pin;document.getElementById('fs-tickets').value=s.tickets;}
+  else{document.getElementById('fs-name').value='';document.getElementById('fs-period').value='';document.getElementById('fs-pin').value='';document.getElementById('fs-tickets').value='0';}
   openModal('student-modal');
 }
 async function saveStudent() {
   const name=document.getElementById('fs-name').value.trim();
+  const period=document.getElementById('fs-period').value.trim();
   const pin=document.getElementById('fs-pin').value.trim();
   if(!name||!pin){alert('Name and PIN required');return;}
   const tickets=+document.getElementById('fs-tickets').value||0;
-  if(editStudentId) await api(`/api/admin/students/${editStudentId}`,'PUT',{name,pin,tickets,active:1});
-  else await api('/api/admin/students','POST',{name,pin,tickets});
+  if(editStudentId) await api(`/api/admin/students/${editStudentId}`,'PUT',{name,period,pin,tickets,active:1});
+  else await api('/api/admin/students','POST',{name,period,pin,tickets});
   closeModal('student-modal'); await loadStudents();
 }
 async function deleteStudent(id) {

@@ -31,13 +31,14 @@ router.post('/logout', (req, res) => {
 
 // ── REGISTER ─────────────────────────────────────────────────
 router.post('/register', (req, res) => {
-  const { name, pin } = req.body;
+  const { name, pin, period } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'Please enter your name' });
   if (!pin || !/^\d{4}$/.test(pin)) return res.status(400).json({ error: 'PIN must be exactly 4 digits' });
+  if (!period?.trim()) return res.status(400).json({ error: 'Please enter your class period' });
   const taken = db.prepare(`SELECT id FROM students WHERE pin=?`).get(pin);
   if (taken) return res.status(409).json({ error: 'That PIN is already taken — choose a different one' });
   try {
-    const r = db.prepare(`INSERT INTO students (name, pin, tickets) VALUES (?, ?, 0)`).run(name.trim(), pin);
+    const r = db.prepare(`INSERT INTO students (name, pin, period, tickets) VALUES (?, ?, ?, 0)`).run(name.trim(), pin, period.trim());
     const student = db.prepare(`SELECT id, name, tickets FROM students WHERE id=?`).get(r.lastInsertRowid);
     req.session.studentId = student.id;
     res.json({ id: student.id, name: student.name, tickets: student.tickets });
