@@ -244,13 +244,12 @@ body{font-family:'Inter',sans-serif;background:var(--gray);color:var(--black);mi
 <div class="modal-bg" id="receipt-modal">
   <div class="receipt">
     <div class="receipt-icon">🎉</div>
-    <div class="receipt-title">Order Placed!</div>
+    <div class="receipt-title">Request Sent!</div>
     <div class="receipt-sub">Show this code to your teacher</div>
     <div class="receipt-item" id="r-item"></div>
     <div class="receipt-code-label">Your Redemption Code</div>
     <div class="receipt-code" id="r-code"></div>
-    <div class="receipt-note">Your teacher will mark it as fulfilled when you redeem it.</div>
-    <div class="receipt-balance">🎟️ Remaining balance: <span id="r-balance"></span> tickets</div>
+    <div class="receipt-note">Bring your physical tickets and this code to your teacher to redeem.</div>
     <button class="btn-close-receipt" onclick="closeReceipt()">DONE</button>
   </div>
 </div>
@@ -396,7 +395,6 @@ function renderItems() {
   grid.innerHTML = items.map(item => {
     const isOut = item.qty <= 0;
     const isLow = item.qty > 0 && item.qty <= 3;
-    const canAfford = student.tickets >= item.price;
     const qtyLabel = isOut ? 'Out of stock' : isLow ? `Only ${item.qty} left!` : `${item.qty} in stock`;
     const qtyClass = isOut ? 'out' : isLow ? 'low' : '';
     return `<div class="item-card${isOut ? ' out' : ''}">
@@ -411,8 +409,8 @@ function renderItems() {
           <div class="item-qty ${qtyClass}">${qtyLabel}</div>
         </div>
         <button class="buy-btn" onclick="buyItem(${item.id},'${item.name.replace(/'/g,"\\'")}',${item.price})"
-          ${isOut || !canAfford ? 'disabled' : ''}>
-          ${isOut ? 'Out' : !canAfford ? '✕' : 'Buy'}
+          ${isOut ? 'disabled' : ''}>
+          ${isOut ? 'Out' : 'Request'}
         </button>
       </div>
     </div>`;
@@ -420,22 +418,19 @@ function renderItems() {
 }
 
 async function buyItem(id, name, price) {
-  if (!confirm(`Buy "${name}" for 🎟️ ${price} tickets?`)) return;
+  if (!confirm(`Request "${name}" for 🎟️ ${price} tickets?`)) return;
   try {
     const res = await api('/api/store/order', 'POST', { item_id: id });
-    student.tickets = res.newBalance;
-    document.getElementById('ticket-count').textContent = res.newBalance;
     showReceipt(res);
     loadStore();
   } catch (e) {
-    alert(e.message || 'Could not complete purchase.');
+    alert(e.message || 'Could not complete request.');
   }
 }
 
 function showReceipt(order) {
   document.getElementById('r-item').textContent = order.itemName;
   document.getElementById('r-code').textContent = order.code;
-  document.getElementById('r-balance').textContent = order.newBalance;
   document.getElementById('receipt-modal').classList.add('open');
 }
 function closeReceipt() {

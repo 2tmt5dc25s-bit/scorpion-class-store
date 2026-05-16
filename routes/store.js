@@ -95,27 +95,20 @@ router.post('/order', requireStudent, (req, res) => {
   const item = db.prepare(`SELECT * FROM items WHERE id=? AND active=1`).get(item_id);
   if (!item) return res.status(404).json({ error: 'Item not found' });
   if (item.qty <= 0) return res.status(400).json({ error: 'Sorry, this item is out of stock!' });
-  if (student.tickets < item.price) return res.status(400).json({ error: `Not enough tickets! You need ${item.price} 🎟️ but only have ${student.tickets}.` });
 
   const code = genCode();
   let orderId;
 
   db.transaction(() => {
-    // Deduct tickets
-    db.prepare(`UPDATE students SET tickets = tickets - ? WHERE id=?`).run(item.price, studentId);
     // Deduct stock
     db.prepare(`UPDATE items SET qty = qty - 1 WHERE id=?`).run(item_id);
     // Create order
     const r = db.prepare(`INSERT INTO orders (student_id,item_id,item_name,price,code) VALUES (?,?,?,?,?)`)
       .run(studentId, item_id, item.name, item.price, code);
     orderId = r.lastInsertRowid;
-    // Log transaction
-    db.prepare(`INSERT INTO transactions (student_id,type,amount,note) VALUES (?,?,?,?)`)
-      .run(studentId, 'purchase', item.price, `Purchased: ${item.name} (order #${r.lastInsertRowid})`);
   })();
 
-  const newBalance = db.prepare(`SELECT tickets FROM students WHERE id=?`).get(studentId).tickets;
-  res.json({ ok: true, orderId, code, newBalance, itemName: item.name, price: item.price });
+  res.json({ ok: true, orderId, code, itemName: item.name, price: item.price });
 });
 
 // ── ORDER HISTORY ────────────────────────────────────────────
