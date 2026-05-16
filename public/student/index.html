@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Scorpion Class Store</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --green:#1a6b2e; --green-dark:#114a1f; --green-light:#d4edda; --green-mid:#2e8b45;
+  --black:#0f0f0f; --white:#fff; --gray:#f2f4f0; --border:#d6dbd3; --muted:#6b7366;
+  --warn-bg:#fff3cd; --warn-text:#7a4f00; --danger-bg:#fce8e8; --danger-text:#8b1c1c;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--gray);color:var(--black);min-height:100vh}
+
+/* ── HEADER ── */
+.header{background:var(--black);color:var(--white);padding:0;position:sticky;top:0;z-index:50}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem}
+.header-left{display:flex;align-items:center;gap:.6rem}
+.header-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px}
+.header-title span{color:#4ecb6e}
+.header::after{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--green-dark),var(--green-mid),var(--green-dark))}
+.ticket-badge{display:flex;align-items:center;gap:4px;background:#1e3a1e;border:1px solid var(--green);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700;color:#4ecb6e}
+.logout-btn{background:none;border:1px solid #444;border-radius:6px;color:#aaa;font-size:12px;padding:4px 10px;cursor:pointer}
+.logout-btn:hover{border-color:#888;color:var(--white)}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:calc(100vh - 60px)}
+.screen.active{display:block}
+
+/* ── PIN LOGIN ── */
+.pin-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:2rem 1rem}
+.mascot-ring{width:90px;height:90px;border-radius:50%;background:var(--black);border:3px solid var(--green);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem}
+.pin-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--black);margin-bottom:.3rem;text-align:center}
+.pin-sub{font-size:13px;color:var(--muted);margin-bottom:2rem;text-align:center}
+.pin-box{background:var(--white);border-radius:16px;border:1.5px solid var(--border);padding:1.5rem;width:100%;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.pin-display{display:flex;justify-content:center;gap:10px;margin-bottom:1.2rem}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--white);transition:.15s}
+.pin-dot.filled{background:var(--green);border-color:var(--green)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pin-key{height:54px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:20px;font-weight:600;cursor:pointer;transition:.1s;font-family:'Inter',sans-serif;color:var(--black)}
+.pin-key:hover{background:var(--green-light);border-color:var(--green)}
+.pin-key:active{transform:scale(.95)}
+.pin-key.del{font-size:16px;color:var(--muted)}
+.pin-key.go{background:var(--green);color:var(--white);border-color:var(--green-dark);font-size:14px;font-weight:700;letter-spacing:.5px}
+.pin-key.go:hover{background:var(--green-dark)}
+.pin-error{color:#c0392b;font-size:13px;text-align:center;margin-top:.8rem;min-height:1.2em}
+.store-closed{background:var(--black);color:var(--white);border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1.5rem;width:100%;max-width:320px}
+.store-closed h2{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#e74c3c;letter-spacing:1px;margin-bottom:.4rem}
+.store-closed p{font-size:13px;color:#aaa}
+
+/* ── STORE ── */
+.store-wrap{padding:1rem}
+.cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:.5rem;margin-bottom:1rem;scrollbar-width:none}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{flex-shrink:0;padding:6px 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:.15s}
+.cat-tab.active{background:var(--green);border-color:var(--green-dark);color:var(--white)}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.item-card{background:var(--white);border-radius:12px;border:1.5px solid var(--border);overflow:hidden;transition:.15s;cursor:pointer}
+.item-card:active{transform:scale(.97)}
+.item-card.out{opacity:.55;cursor:not-allowed}
+.item-card-body{padding:.9rem .9rem .6rem}
+.item-icon{font-size:28px;margin-bottom:.4rem}
+.item-name{font-weight:600;font-size:14px;margin-bottom:.3rem;line-height:1.3}
+.item-cat{font-size:11px;color:var(--muted);margin-bottom:.5rem}
+.item-footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem .9rem .7rem}
+.item-price{font-weight:700;font-size:14px;color:var(--green);display:flex;align-items:center;gap:3px}
+.item-qty{font-size:11px;color:var(--muted)}
+.item-qty.low{color:#b86e00;font-weight:600}
+.item-qty.out{color:#c0392b;font-weight:600}
+.buy-btn{background:var(--green);color:var(--white);border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.buy-btn:disabled{background:#ccc;cursor:not-allowed}
+.no-items{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--black);border-top:2px solid var(--green);display:flex;z-index:50}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:.6rem .5rem;border:none;background:none;color:#888;font-size:10px;font-weight:500;cursor:pointer;letter-spacing:.3px}
+.nav-btn.active{color:#4ecb6e}
+.nav-btn svg{width:20px;height:20px}
+.main-content{padding-bottom:70px}
+
+/* ── ORDERS SCREEN ── */
+.orders-wrap{padding:1rem}
+.orders-wrap h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--green-dark);margin-bottom:1rem}
+.order-card{background:var(--white);border-radius:12px;border:1.5px solid var(--border);padding:1rem;margin-bottom:.75rem}
+.order-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem}
+.order-name{font-weight:700;font-size:15px}
+.order-badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600}
+.order-badge.pending{background:var(--warn-bg);color:var(--warn-text)}
+.order-badge.fulfilled{background:var(--green-light);color:var(--green-dark)}
+.order-badge.cancelled{background:var(--danger-bg);color:var(--danger-text)}
+.order-meta{font-size:12px;color:var(--muted);display:flex;gap:.8rem;flex-wrap:wrap}
+.order-code{display:inline-flex;align-items:center;gap:4px;background:var(--black);color:#4ecb6e;border-radius:6px;padding:2px 10px;font-family:monospace;font-size:14px;font-weight:700;letter-spacing:2px;margin-top:.4rem}
+.no-orders{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
+
+/* ── RECEIPT MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.receipt{background:var(--white);border-radius:20px 20px 0 0;padding:2rem 1.5rem;width:100%;max-width:480px;text-align:center;border-top:4px solid var(--green)}
+.receipt-icon{font-size:48px;margin-bottom:.5rem}
+.receipt-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--green-dark);margin-bottom:.3rem}
+.receipt-sub{font-size:14px;color:var(--muted);margin-bottom:1.2rem}
+.receipt-item{font-size:18px;font-weight:700;margin-bottom:.5rem}
+.receipt-code-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.3rem}
+.receipt-code{font-family:monospace;font-size:32px;font-weight:700;color:var(--green);letter-spacing:6px;background:var(--green-light);border-radius:10px;padding:.5rem 1.5rem;display:inline-block;margin-bottom:1rem}
+.receipt-note{font-size:12px;color:var(--muted);margin-bottom:1.2rem;line-height:1.5}
+.receipt-balance{display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600;color:var(--black);margin-bottom:1.5rem}
+.btn-close-receipt{width:100%;height:48px;background:var(--green);color:var(--white);border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+.btn-close-receipt:hover{background:var(--green-dark)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <svg width="28" height="28" viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="56" rx="16" ry="12" fill="#4ecb6e"/><ellipse cx="50" cy="40" rx="11" ry="9" fill="#4ecb6e"/><circle cx="45" cy="38" r="2.2" fill="#0f0f0f"/><circle cx="55" cy="38" r="2.2" fill="#0f0f0f"/><circle cx="45.8" cy="37.2" r=".8" fill="white"/><circle cx="55.8" cy="37.2" r=".8" fill="white"/><path d="M39 37 C32 32 26 35 24 30" stroke="#4ecb6e" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M24 30 C21 27 19 30 20 33" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M24 30 C23 26 26 25 27 28" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M61 37 C68 32 74 35 76 30" stroke="#4ecb6e" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M76 30 C79 27 81 30 80 33" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M76 30 C77 26 74 25 73 28" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><line x1="38" y1="52" x2="26" y2="48" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="37" y1="57" x2="24" y2="56" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="62" x2="26" y2="65" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="52" x2="74" y2="48" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="63" y1="57" x2="76" y2="56" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="62" x2="74" y2="65" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><path d="M50 68 C50 74 44 76 42 82 C40 88 44 94 50 96" stroke="#4ecb6e" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="51" cy="97" r="2.5" fill="#4ecb6e"/></svg>
+      <span class="header-title">SCORPION <span>STORE</span></span>
+    </div>
+    <div id="header-right" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="ticket-badge">🎟️ <span id="ticket-count">0</span></div>
+        <button class="logout-btn" onclick="logout()">Exit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN SCREEN -->
+<div class="screen active" id="screen-pin">
+  <div class="pin-wrap">
+    <div id="closed-banner" style="display:none" class="store-closed">
+      <h2>🔒 Store Closed</h2>
+      <p>The store is not open right now. Check with your teacher!</p>
+    </div>
+    <div class="mascot-ring">
+      <svg width="52" height="52" viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="56" rx="16" ry="12" fill="#4ecb6e"/><ellipse cx="50" cy="40" rx="11" ry="9" fill="#4ecb6e"/><circle cx="45" cy="38" r="2.2" fill="#0f0f0f"/><circle cx="55" cy="38" r="2.2" fill="#0f0f0f"/><circle cx="45.8" cy="37.2" r=".8" fill="white"/><circle cx="55.8" cy="37.2" r=".8" fill="white"/><path d="M39 37 C32 32 26 35 24 30" stroke="#4ecb6e" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M24 30 C21 27 19 30 20 33" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M24 30 C23 26 26 25 27 28" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M61 37 C68 32 74 35 76 30" stroke="#4ecb6e" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M76 30 C79 27 81 30 80 33" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M76 30 C77 26 74 25 73 28" stroke="#4ecb6e" stroke-width="3" stroke-linecap="round" fill="none"/><line x1="38" y1="52" x2="26" y2="48" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="37" y1="57" x2="24" y2="56" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="62" x2="26" y2="65" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="52" x2="74" y2="48" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="63" y1="57" x2="76" y2="56" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="62" x2="74" y2="65" stroke="#4ecb6e" stroke-width="2.5" stroke-linecap="round"/><path d="M50 68 C50 74 44 76 42 82 C40 88 44 94 50 96" stroke="#4ecb6e" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="51" cy="97" r="2.5" fill="#4ecb6e"/></svg>
+    </div>
+    <div class="pin-title">Enter Your PIN</div>
+    <div class="pin-sub">Use your ticket PIN to access the store</div>
+    <div class="pin-box">
+      <div class="pin-display" id="pin-display">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key del" onclick="pinDel()">⌫</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key go" onclick="pinSubmit()">GO</button>
+      </div>
+      <div class="pin-error" id="pin-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STORE SCREEN -->
+<div class="screen" id="screen-store">
+  <div class="main-content">
+    <div class="store-wrap">
+      <div class="cat-tabs" id="cat-tabs"></div>
+      <div class="items-grid" id="items-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS SCREEN -->
+<div class="screen" id="screen-orders">
+  <div class="main-content">
+    <div class="orders-wrap">
+      <h2>🧾 MY ORDERS</h2>
+      <div id="orders-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV (shown after login) -->
+<div class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="nav-btn active" id="nav-store" onclick="showTab('store')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    SHOP
+  </button>
+  <button class="nav-btn" id="nav-orders" onclick="showTab('orders')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    ORDERS
+  </button>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal-bg" id="receipt-modal">
+  <div class="receipt">
+    <div class="receipt-icon">🎉</div>
+    <div class="receipt-title">Order Placed!</div>
+    <div class="receipt-sub">Show this code to your teacher</div>
+    <div class="receipt-item" id="r-item"></div>
+    <div class="receipt-code-label">Your Redemption Code</div>
+    <div class="receipt-code" id="r-code"></div>
+    <div class="receipt-note">Your teacher will mark it as fulfilled when you redeem it.</div>
+    <div class="receipt-balance">🎟️ Remaining balance: <span id="r-balance"></span> tickets</div>
+    <button class="btn-close-receipt" onclick="closeReceipt()">DONE</button>
+  </div>
+</div>
+
+<script>
+let pin = '';
+let student = null;
+let allItems = [];
+let allCategories = [];
+let activeCategory = 'All';
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init() {
+  const status = await api('/api/store/status');
+  if (!status.open) {
+    document.getElementById('closed-banner').style.display = 'block';
+  }
+  // Check existing session
+  try {
+    const me = await api('/api/store/me');
+    if (me.id) { student = me; enterStore(); return; }
+  } catch {}
+}
+
+// ── PIN ───────────────────────────────────────────────────────
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('d' + i).classList.toggle('filled', i < pin.length);
+  }
+}
+function pinKey(k) {
+  if (pin.length >= 4) return;
+  pin += k;
+  updateDots();
+  document.getElementById('pin-error').textContent = '';
+  if (pin.length === 4) pinSubmit();
+}
+function pinDel() { pin = pin.slice(0, -1); updateDots(); }
+async function pinSubmit() {
+  if (!pin) return;
+  try {
+    const res = await api('/api/store/login', 'POST', { pin });
+    student = res;
+    enterStore();
+  } catch (e) {
+    document.getElementById('pin-error').textContent = e.message || 'Invalid PIN';
+    pin = ''; updateDots();
+  }
+}
+
+// ── STORE ─────────────────────────────────────────────────────
+function enterStore() {
+  document.getElementById('header-right').style.display = 'block';
+  document.getElementById('bottom-nav').style.display = 'flex';
+  showTab('store');
+  loadStore();
+}
+
+async function loadStore() {
+  document.getElementById('ticket-count').textContent = student.tickets;
+  const [items, cats] = await Promise.all([
+    api('/api/store/items'),
+    api('/api/store/categories')
+  ]);
+  allItems = items;
+  allCategories = cats;
+  renderCatTabs();
+  renderItems();
+}
+
+function renderCatTabs() {
+  const tabs = document.getElementById('cat-tabs');
+  const allCats = [{ name: 'All' }, ...allCategories];
+  tabs.innerHTML = allCats.map(c =>
+    `<button class="cat-tab${c.name === activeCategory ? ' active' : ''}" onclick="setCategory('${c.name}')">${c.name}</button>`
+  ).join('');
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  renderCatTabs();
+  renderItems();
+}
+
+const CAT_ICONS = { Supplies:'✏️', Snacks:'🍎', Rewards:'⭐', Books:'📚', Other:'📦' };
+function catIcon(c) { return CAT_ICONS[c] || '🏷️'; }
+
+function renderItems() {
+  const grid = document.getElementById('items-grid');
+  let items = activeCategory === 'All' ? allItems : allItems.filter(i => i.cat_name === activeCategory);
+  if (!items.length) {
+    grid.innerHTML = `<div class="no-items" style="grid-column:1/-1">🦂 No items here yet!</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => {
+    const isOut = item.qty <= 0;
+    const isLow = item.qty > 0 && item.qty <= 3;
+    const canAfford = student.tickets >= item.price;
+    const qtyLabel = isOut ? 'Out of stock' : isLow ? `Only ${item.qty} left!` : `${item.qty} in stock`;
+    const qtyClass = isOut ? 'out' : isLow ? 'low' : '';
+    return `<div class="item-card${isOut ? ' out' : ''}">
+      <div class="item-card-body">
+        <div class="item-icon">${catIcon(item.cat_name)}</div>
+        <div class="item-name">${item.name}</div>
+        <div class="item-cat">${item.cat_name}</div>
+      </div>
+      <div class="item-footer">
+        <div>
+          <div class="item-price">🎟️ ${item.price}</div>
+          <div class="item-qty ${qtyClass}">${qtyLabel}</div>
+        </div>
+        <button class="buy-btn" onclick="buyItem(${item.id},'${item.name.replace(/'/g,"\\'")}',${item.price})"
+          ${isOut || !canAfford ? 'disabled' : ''}>
+          ${isOut ? 'Out' : !canAfford ? '✕' : 'Buy'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function buyItem(id, name, price) {
+  if (!confirm(`Buy "${name}" for 🎟️ ${price} tickets?`)) return;
+  try {
+    const res = await api('/api/store/order', 'POST', { item_id: id });
+    student.tickets = res.newBalance;
+    document.getElementById('ticket-count').textContent = res.newBalance;
+    showReceipt(res);
+    loadStore();
+  } catch (e) {
+    alert(e.message || 'Could not complete purchase.');
+  }
+}
+
+function showReceipt(order) {
+  document.getElementById('r-item').textContent = order.itemName;
+  document.getElementById('r-code').textContent = order.code;
+  document.getElementById('r-balance').textContent = order.newBalance;
+  document.getElementById('receipt-modal').classList.add('open');
+}
+function closeReceipt() {
+  document.getElementById('receipt-modal').classList.remove('open');
+}
+
+// ── ORDERS ────────────────────────────────────────────────────
+async function loadOrders() {
+  const orders = await api('/api/store/orders');
+  const list = document.getElementById('orders-list');
+  if (!orders.length) {
+    list.innerHTML = `<div class="no-orders">🦂 No orders yet — go shop!</div>`;
+    return;
+  }
+  list.innerHTML = orders.map(o => `
+    <div class="order-card">
+      <div class="order-top">
+        <div class="order-name">${o.item_name}</div>
+        <span class="order-badge ${o.status}">${o.status}</span>
+      </div>
+      <div class="order-meta">
+        <span>🎟️ ${o.price} tickets</span>
+        <span>${fmtDate(o.created_at)}</span>
+        ${o.fulfilled_at ? `<span>✅ ${fmtDate(o.fulfilled_at)}</span>` : ''}
+      </div>
+      <div><span class="order-code">🔑 ${o.code}</span></div>
+    </div>
+  `).join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function showTab(tab) {
+  ['store','orders'].forEach(t => {
+    document.getElementById('screen-' + t).classList.toggle('active', t === tab);
+    document.getElementById('nav-' + t)?.classList.toggle('active', t === tab);
+  });
+  if (tab === 'orders') loadOrders();
+}
+
+async function logout() {
+  await api('/api/store/logout', 'POST');
+  student = null; pin = '';
+  document.getElementById('header-right').style.display = 'none';
+  document.getElementById('bottom-nav').style.display = 'none';
+  document.getElementById('screen-pin').classList.add('active');
+  document.getElementById('screen-store').classList.remove('active');
+  document.getElementById('screen-orders').classList.remove('active');
+  updateDots();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+async function api(url, method = 'GET', body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+function fmtDate(str) {
+  return new Date(str).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+init();
+</script>
+</body>
+</html>
