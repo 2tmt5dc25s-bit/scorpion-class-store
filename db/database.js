@@ -47,7 +47,8 @@ db.exec(`
     status      TEXT NOT NULL DEFAULT 'pending',
     code        TEXT NOT NULL,
     created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-    fulfilled_at TEXT
+    fulfilled_at TEXT,
+    cancel_note TEXT
   );
 
   CREATE TABLE IF NOT EXISTS transactions (
@@ -65,8 +66,9 @@ db.exec(`
   );
 `);
 
-// Migrate: add period column to existing databases
+// Migrations for existing databases
 try { db.exec(`ALTER TABLE students ADD COLUMN period TEXT NOT NULL DEFAULT ''`); } catch {}
+try { db.exec(`ALTER TABLE orders ADD COLUMN cancel_note TEXT`); } catch {}
 
 // Seed default settings
 const seedSettings = db.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`);

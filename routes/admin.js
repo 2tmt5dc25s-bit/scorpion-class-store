@@ -186,7 +186,7 @@ router.get('/orders', requireAdmin, (req, res) => {
 });
 
 router.patch('/orders/:id', requireAdmin, (req, res) => {
-  const { status } = req.body;
+  const { status, cancel_note } = req.body;
   const valid = ['pending','fulfilled','cancelled'];
   if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
@@ -195,15 +195,12 @@ router.patch('/orders/:id', requireAdmin, (req, res) => {
 
   db.transaction(() => {
     if (status === 'cancelled' && order.status === 'pending') {
-      // Refund tickets
-      db.prepare(`UPDATE students SET tickets = tickets + ? WHERE id=?`).run(order.price, order.student_id);
-      db.prepare(`INSERT INTO transactions (student_id,type,amount,note) VALUES (?,?,?,?)`)
-        .run(order.student_id, 'refund', order.price, `Refund: ${order.item_name} (order #${order.id})`);
       // Restore stock
       db.prepare(`UPDATE items SET qty = qty + 1 WHERE id=?`).run(order.item_id);
     }
     const fulfilledAt = status === 'fulfilled' ? new Date().toISOString() : null;
-    db.prepare(`UPDATE orders SET status=?, fulfilled_at=? WHERE id=?`).run(status, fulfilledAt, req.params.id);
+    const note = status === 'cancelled' ? (cancel_note?.trim() || null) : null;
+    db.prepare(`UPDATE orders SET status=?, fulfilled_at=?, cancel_note=? WHERE id=?`).run(status, fulfilledAt, note, req.params.id);
   })();
   res.json({ ok: true });
 });

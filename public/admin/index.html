@@ -214,7 +214,7 @@ tr:hover td{background:#f5faf5}
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>#</th><th>Student</th><th>Item</th><th>Price</th><th>Code</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>#</th><th>Student</th><th>Item</th><th>Price</th><th>Code</th><th>Date</th><th>Status</th><th>Note</th><th>Actions</th></tr></thead>
             <tbody id="orders-tbody"></tbody>
           </table>
         </div>
@@ -312,6 +312,22 @@ tr:hover td{background:#f5faf5}
     <div class="modal-btns">
       <button class="btn" onclick="closeModal('student-modal')">Cancel</button>
       <button class="btn primary" onclick="saveStudent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL ORDER MODAL -->
+<div class="modal-bg" id="cancel-modal">
+  <div class="modal">
+    <h3>Cancel Order</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem" id="cancel-modal-desc"></div>
+    <div class="field">
+      <label>Reason (optional)</label>
+      <input type="text" id="cancel-note-input" placeholder="e.g. Item unavailable, student request...">
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal('cancel-modal')">Go back</button>
+      <button class="btn danger" onclick="confirmCancel()" style="background:var(--danger-bg);border-color:#c0392b">Cancel Order</button>
     </div>
   </div>
 </div>
@@ -431,7 +447,7 @@ async function loadDashboard() {
 async function loadOrders() {
   const orders = await api('/api/admin/orders' + (orderFilter ? `?status=${orderFilter}` : ''));
   const tbody = document.getElementById('orders-tbody');
-  if (!orders.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No orders found.</td></tr>`; return; }
+  if (!orders.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="9">No orders found.</td></tr>`; return; }
   tbody.innerHTML = orders.map(o => `<tr>
     <td style="color:var(--muted)">#${o.id}</td>
     <td style="font-weight:600">${o.student_name}</td>
@@ -440,9 +456,10 @@ async function loadOrders() {
     <td><span class="order-code">${o.code}</span></td>
     <td style="font-size:12px;color:var(--muted)">${fmtDate(o.created_at)}</td>
     <td><span class="badge ${o.status}">${o.status}</span></td>
+    <td style="font-size:12px;color:var(--muted);font-style:${o.cancel_note?'normal':'italic'}">${o.cancel_note||''}</td>
     <td><div class="actions">
       ${o.status==='pending'?`<button class="btn sm primary" onclick="updateOrder(${o.id},'fulfilled')">✓ Fulfill</button>
-        <button class="btn sm danger" onclick="updateOrder(${o.id},'cancelled')" style="margin-left:4px">✕</button>`:''}
+        <button class="btn sm danger" onclick="openCancelModal(${o.id},'${o.item_name.replace(/'/g,"\\'")}','${o.student_name.replace(/'/g,"\\'")}')">✕</button>`:''}
     </div></td>
   </tr>`).join('');
 }
@@ -452,8 +469,20 @@ function setOrderFilter(f, btn) {
   btn.classList.add('active');
   loadOrders();
 }
+let cancelOrderId = null;
+function openCancelModal(id, item, student) {
+  cancelOrderId = id;
+  document.getElementById('cancel-modal-desc').textContent = `"${item}" requested by ${student}`;
+  document.getElementById('cancel-note-input').value = '';
+  openModal('cancel-modal');
+}
+async function confirmCancel() {
+  const note = document.getElementById('cancel-note-input').value.trim();
+  await api(`/api/admin/orders/${cancelOrderId}`,'PATCH',{status:'cancelled',cancel_note:note});
+  closeModal('cancel-modal');
+  loadOrders(); loadDashboard();
+}
 async function updateOrder(id, status) {
-  if (status==='cancelled' && !confirm('Cancel this order and refund the student?')) return;
   await api(`/api/admin/orders/${id}`,'PATCH',{status});
   loadOrders(); loadDashboard();
 }
