@@ -115,7 +115,7 @@ router.post('/order', requireStudent, (req, res) => {
 // ── ORDER HISTORY ────────────────────────────────────────────
 router.get('/orders', requireStudent, (req, res) => {
   const orders = db.prepare(`
-    SELECT id, item_name, price, status, code, created_at, fulfilled_at
+    SELECT id, item_name, price, status, code, created_at, fulfilled_at, cancel_note
     FROM orders WHERE student_id=?
     ORDER BY created_at DESC
   `).all(req.session.studentId);
